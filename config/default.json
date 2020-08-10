@@ -1,0 +1,5 @@
+{
+  "mongoURI": "mongodb+srv://dbUser:OgYIFbwzAI0aeoec@cluster0.rrngb.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority",
+  "jwtsecret": "secrettokenthing",
+  "errorMessageServer": "Server error."
+}
