@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
 const auth = require("../../middleware/auth");
@@ -25,11 +26,11 @@ const getProfit = (
   if (buySell === "sell") {
     profit =
       (openPrice * 100 - closePrice * 100) * parseInt(quantity) -
-      (parseFloat(openFees) + parseFloat(closeFees));
+      (openFees * 100 + closeFees * 100) / 100;
   } else if (buySell === "buy") {
     profit =
       (closePrice * 100 - openPrice * 100) * parseInt(quantity) -
-      (parseFloat(openFees) + parseFloat(closeFees));
+      (openFees * 100 + closeFees * 100) / 100;
   }
   return profit;
 };
@@ -68,6 +69,14 @@ const processTrades = (trade) => {
     totals.collateral =
       trade.open.legs[0].strikePrice * 100 -
       trade.open.legs[1].strikePrice * 100;
+  } else if (
+    trade.tradeType.type === "option" &&
+    trade.tradeType.strategy === "ccs"
+  ) {
+    console.log(trade);
+    totals.collateral =
+      trade.open.legs[1].strikePrice * 100 -
+      trade.open.legs[0].strikePrice * 100;
   } else if (
     trade.tradeType.type === "option" &&
     trade.tradeType.strategy === "straddle"
@@ -152,7 +161,7 @@ router.post(
 // @access  Private
 router.get("/", auth, async (req, res) => {
   try {
-    const trades = await Trade.find({ user: req.user.id }).sort({ date: -1 });
+    const trades = await Trade.find({ user: req.user.id }).sort({ company: 1 });
     res.json(trades);
   } catch (err) {
     console.error(err.message);
@@ -178,6 +187,171 @@ router.get("/dates/:startDate/:endDate", auth, async (req, res) => {
     res.status(500).send(config.get("errorMessageServer"));
   }
 });
+
+// @route   Get api/trades/totals
+// @desc    Get totals of all trades
+// @access  Private
+router.get("/totals", auth, async (req, res) => {
+  console.log(req.user.id);
+  try {
+    const totalProfit = await Trade.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(req.user.id) } },
+      {
+        $unwind: "$totals",
+      },
+      {
+        $group: {
+          _id: null,
+          totalProfit: {
+            $sum: "$totals.profit",
+          },
+          totalCount: {
+            $sum: 1,
+          },
+        },
+      },
+    ]);
+    res.json(totalProfit);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send(config.get("errorMessageServer"));
+  }
+});
+
+// @route   Get api/trades/totals/wins
+// @desc    Get WINS
+// @access  Private
+router.get("/totals/wins", auth, async (req, res) => {
+  console.log(req.user.id);
+  try {
+    const totalProfit = await Trade.aggregate([
+      {
+        $unwind: "$totals",
+      },
+      { $match: { "totals.profit": { $gt: 0 } } },
+      {
+        $group: {
+          _id: null,
+          totalWins: {
+            $sum: 1,
+          },
+        },
+      },
+    ]);
+    res.json(totalProfit);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send(config.get("errorMessageServer"));
+  }
+});
+
+// @route   Get api/trades/totals/losses
+// @desc    Get LOSSES
+// @access  Private
+router.get("/totals/losses", auth, async (req, res) => {
+  console.log(req.user.id);
+  try {
+    const totalLosses = await Trade.aggregate([
+      {
+        $unwind: "$totals",
+      },
+      { $match: { "totals.profit": { $lte: 0 } } },
+      {
+        $group: {
+          _id: null,
+          totalLosses: {
+            $sum: 1,
+          },
+        },
+      },
+    ]);
+    res.json(totalLosses);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send(config.get("errorMessageServer"));
+  }
+});
+
+// @route   Get api/trades/totals/all
+// @desc    Get ALL STATS
+// @access  Private
+router.get("/totals/all", auth, async (req, res) => {
+  try {
+    const totalAll = await Trade.aggregate([
+      {
+        $facet: {
+          totals: [
+            { $match: { user: new mongoose.Types.ObjectId(req.user.id) } },
+            {
+              $unwind: "$totals",
+            },
+            {
+              $group: {
+                _id: null,
+                totalProfit: {
+                  $sum: "$totals.profit",
+                },
+                totalCount: {
+                  $sum: 1,
+                },
+              },
+            },
+          ],
+          wins: [
+            {
+              $unwind: "$totals",
+            },
+            {
+              $match: {
+                $and: [
+                  { user: new mongoose.Types.ObjectId(req.user.id) },
+                  { "totals.profit": { $gt: 0 } },
+                ],
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalWins: {
+                  $sum: 1,
+                },
+              },
+            },
+          ],
+          losses: [
+            {
+              $unwind: "$totals",
+            },
+            {
+              $match: {
+                $and: [
+                  { user: new mongoose.Types.ObjectId(req.user.id) },
+                  { "totals.profit": { $lte: 0 } },
+                ],
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalLosses: {
+                  $sum: 1,
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+    let [totals] = totalAll;
+    res.json(totals);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send(config.get("errorMessageServer"));
+  }
+});
+
+//.find({ user: req.user.id })
+//sum: { totals: { profit: { $sum: "$profit" } } },
 
 // @route   Get api/trades/:id
 // @desc    Get trade by id

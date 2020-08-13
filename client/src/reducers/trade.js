@@ -4,11 +4,13 @@ import {
   TRADE_ERROR,
   DELETE_TRADE,
   ADD_TRADE,
+  GET_TOTALS,
 } from "../actions/types";
 
 const initialState = {
   trades: [],
   trade: null,
+  totals: [],
   loading: true,
   error: {},
 };
@@ -28,6 +30,11 @@ export default function (state = initialState, action) {
         ...state,
         // trades: [payload, ...state.trades],
         /// loading: false,
+      };
+    case GET_TOTALS:
+      return {
+        ...state,
+        totals: payload,
       };
     case DELETE_TRADE:
       return {

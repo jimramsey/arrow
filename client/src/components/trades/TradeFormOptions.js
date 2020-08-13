@@ -7,7 +7,10 @@ import { connect } from "react-redux";
 import InputCurrency from "../form-elements/InputCurrency";
 
 const TradeFormOptions = (props) => {
-  if (props.tradeType === "option" && props.strategy === "pcs") {
+  if (
+    props.tradeType === "option" &&
+    (props.strategy === "pcs" || props.strategy === "ccs")
+  ) {
     return (
       <Fragment>
         <div className="flex flex-wrap -mx-3 mb-4">
@@ -62,7 +65,11 @@ const TradeFormOptions = (props) => {
     );
   } else if (
     props.tradeType === "option" &&
-    (props.strategy === "csp" || props.strategy === "straddle")
+    (props.strategy === "csp" ||
+      props.strategy === "straddle" ||
+      props.strategy === "coveredcall" ||
+      props.strategy === "longcall" ||
+      props.strategy === "longput")
   ) {
     return (
       <Fragment>

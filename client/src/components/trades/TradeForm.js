@@ -64,6 +64,10 @@ const TradeForm = ({ addTrade, history }) => {
                     >
                       <option value="csp">Cash-Secured Put</option>
                       <option value="pcs">Put Credit Spread</option>
+                      <option value="ccs">Call Credit Spread</option>
+                      <option value="longcall">Long Call</option>
+                      <option value="longput">Long Put</option>
+                      <option value="coveredcall">Covered Call</option>
                       <option value="straddle">Straddle</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -81,7 +85,9 @@ const TradeForm = ({ addTrade, history }) => {
                     name="buySell"
                     onChange={formik.handleChange}
                     value={
-                      formik.values.tradeType.strategy === "straddle"
+                      formik.values.tradeType.strategy === "straddle" ||
+                      formik.values.tradeType.strategy === "longcall" ||
+                      formik.values.tradeType.strategy === "longput"
                         ? (formik.values.buySell = "buy")
                         : (formik.values.buySell = "sell")
                     }

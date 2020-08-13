@@ -3,6 +3,7 @@ import { setAlert } from "./alert";
 import {
   GET_TRADES,
   GET_TRADES_BY_DATE,
+  GET_TOTALS,
   TRADE_ERROR,
   DELETE_TRADE,
   ADD_TRADE,
@@ -32,6 +33,24 @@ export const getTradesByDate = (startWeek, endWeek) => async (dispatch) => {
     const res = await axios.get(`/api/trades/dates/${startWeek}/${endWeek}`);
     dispatch({
       type: GET_TRADES_BY_DATE,
+      payload: res.data,
+    });
+  } catch (err) {
+    dispatch({
+      type: TRADE_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status },
+    });
+  }
+};
+
+// get totals
+
+export const getTotals = () => async (dispatch) => {
+  try {
+    const res = await axios.get(`/api/trades/totals/all`);
+    console.log(res.data);
+    dispatch({
+      type: GET_TOTALS,
       payload: res.data,
     });
   } catch (err) {

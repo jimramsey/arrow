@@ -3,20 +3,29 @@ import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Spinner from "../layout/Spinner";
 import TradeItem from "../trades/TradeItem";
-import { getTradesByDate } from "../../actions/trade";
+import { getTradesByDate, getTotals } from "../../actions/trade";
 import NumberFormat from "react-number-format";
 import * as moment from "moment";
+// import { static } from "express";
 
 const startWeek = moment().startOf("week").format("YYYY-MM-DD");
 const endWeek = moment().endOf("week").format("YYYY-MM-DD");
 
-const Trades = ({ getTradesByDate, trade: { trades, loading } }) => {
+const Trades = ({
+  getTotals,
+  getTradesByDate,
+  trade: { trades, totals, loading },
+}) => {
   const [dashboardData, setDashboardData] = useState({
     trades: [],
     wins: 0,
     losses: 0,
     totalProfit: 0,
   });
+
+  useEffect(() => {
+    getTotals();
+  }, []);
 
   useEffect(() => {
     getTradesByDate(startWeek, endWeek);
@@ -28,10 +37,16 @@ const Trades = ({ getTradesByDate, trade: { trades, loading } }) => {
       dashboardData.wins = 0;
       dashboardData.losses = 0;
       trades.map((trade) => {
-        dashboardData.totalProfit += trade.totals.profit;
+        dashboardData.totalProfit += +trade.totals.profit;
         trade.totals.profit > 0 ? dashboardData.wins++ : dashboardData.losses++;
       });
       console.log(dashboardData.totalProfit);
+    }
+    if (totals) {
+      console.log(totals.wins[0].totalWins);
+      console.log(totals.losses[0].totalLosses);
+      console.log(totals.totals[0].totalProfit);
+      console.log(totals.totals[0].totalCount);
     }
   }, [trades]);
 
@@ -42,6 +57,17 @@ const Trades = ({ getTradesByDate, trade: { trades, loading } }) => {
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-light leading-tight text-gray-900">
               This Week{" "}
+              {totals ? (
+                <NumberFormat
+                  value={parseFloat(totals.totals[0].totalProfit).toFixed(2)}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  allowLeadingZeros={false}
+                  prefix={"$"}
+                  fixedDecimalScale={true}
+                  decimalScale="2"
+                />
+              ) : null}
             </h1>
           </div>
         </header>
@@ -60,9 +86,10 @@ const Trades = ({ getTradesByDate, trade: { trades, loading } }) => {
                   }`}
                 >
                   <NumberFormat
-                    value={dashboardData.totalProfit}
+                    value={parseFloat(dashboardData.totalProfit).toFixed(2)}
                     displayType={"text"}
                     thousandSeparator={true}
+                    allowLeadingZeros={false}
                     prefix={"$"}
                     fixedDecimalScale={true}
                     decimalScale="2"
@@ -131,11 +158,13 @@ const Trades = ({ getTradesByDate, trade: { trades, loading } }) => {
 
 Trades.propTypes = {
   getTradesByDate: PropTypes.func.isRequired,
+  getTotals: PropTypes.func.isRequired,
   trade: PropTypes.object.isRequired,
+  // totals: PropTypes.array.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   trade: state.trade,
 });
 
-export default connect(mapStateToProps, { getTradesByDate })(Trades);
+export default connect(mapStateToProps, { getTradesByDate, getTotals })(Trades);

@@ -14,6 +14,7 @@ export const PROFILE_ERROR = "PROFILE_ERROR";
 export const DELETE_USER = "DELETE_USER";
 export const GET_TRADES = "GET_TRADES";
 export const GET_TRADES_BY_DATE = "GET_TRADES_BY_DATE";
+export const GET_TOTALS = "GET_TOTALS";
 export const ADD_TRADE = "ADD_TRADE";
 export const DELETE_TRADE = "DELETE_TRADE";
 export const TRADE_ERROR = "TRADE_ERROR";

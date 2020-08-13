@@ -12,8 +12,16 @@ const getStrategy = (type) => {
       return "Cash-Secured Put";
     case "pcs":
       return "Put Credit Spread";
+    case "ccs":
+      return "Call Credit Spread";
     case "straddle":
       return "Straddle";
+    case "longcall":
+      return "Long Call";
+    case "longput":
+      return "Long Put";
+    case "coveredcall":
+      return "Covered Call";
     default:
       return "";
   }
@@ -107,7 +115,7 @@ const TradeItem = ({ key, trade, deleteTrade }) => {
         }`}
       >
         <NumberFormat
-          value={trade.totals.profit}
+          value={parseFloat(trade.totals.profit).toFixed(2)}
           displayType={"text"}
           thousandSeparator={true}
           prefix={"$"}

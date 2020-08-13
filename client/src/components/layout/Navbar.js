@@ -1,8 +1,9 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import { logout } from "../../actions/auth";
+import { getTotals } from "../../actions/trade";
 // import { getCurrentProfile } from "../../actions/profile";
 
 const Navbar = ({ auth: { user, isAuthenticated, loading }, logout }) => {
