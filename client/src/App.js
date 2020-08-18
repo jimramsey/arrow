@@ -5,6 +5,7 @@ import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
 import Alert from "./components/layout/Alert";
 import Dashboard from "./components/dashboard/Dashboard";
+import Dboard from "./components/dashboard/Dboard";
 // import Trades from "./components/dashboard/Trades";
 import Settings from "./components/dashboard/Settings";
 import CreateProfile from "./components/profile-forms/CreateProfile";
@@ -39,7 +40,7 @@ const App = () => {
               <Route exact path="/" component={Login} />
               <Route exact path="/register" component={Register} />
               <Route exact path="/login" component={Login} />
-              <PrivateRoute exact path="/dashboard" component={Dashboard} />
+              <PrivateRoute exact path="/dashboard" component={Dboard} />
               <PrivateRoute exact path="/trades" component={Trades} />
               <PrivateRoute exact path="/add-trade" component={TradeForm} />
               <PrivateRoute exact path="/settings" component={Settings} />
